@@ -3,11 +3,11 @@ pipeline {
 
     environment {
         IMAGE_NAME = "nginx-demo"
-        DOCKERHUB_USER = "sashikumar24"
     }
 
     parameters {
-        string(name: 'NGINX_PORT', defaultValue: '8081', description: 'Port to run Nginx container (must not be 8080)')
+        string(name: 'NGINX_PORT', defaultValue: '8081', description: 'Port to run Nginx container (not 8080)')
+        string(name: 'DOCKERHUB_USER', defaultValue: 'sashikumar24', description: 'DockerHub username')
     }
 
     stages {
