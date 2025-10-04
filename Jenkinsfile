@@ -6,13 +6,17 @@ pipeline {
         DOCKERHUB_USER = "sashikumar24"
     }
 
+    parameters {
+        string(name: 'NGINX_PORT', defaultValue: '8081', description: 'Port to run Nginx container (must not be 8080)')
+    }
+
     stages {
         stage('Checkout') {
             steps {
                 echo "Pulling source code from GitHub..."
                 git branch: 'main',
                     url: 'https://github.com/ravindra124567/nginx-demo.git',
-                    credentialsId: 'GITS_CREDENTIAL' // GitHub PAT credential ID in Jenkins
+                    credentialsId: 'GITS_CREDENTIAL'
             }
         }
 
@@ -25,11 +29,11 @@ pipeline {
 
         stage('Run Container Locally') {
             steps {
-                echo "Running container on port 8080..."
+                echo "Running container on port ${params.NGINX_PORT}..."
                 sh '''
                 docker stop nginx-demo || true
                 docker rm nginx-demo || true
-                docker run -d --name nginx-demo -p 8080:80 nginx-demo:latest
+                docker run -d --name nginx-demo -p ${NGINX_PORT}:80 nginx-demo:latest
                 '''
             }
         }
@@ -51,7 +55,7 @@ pipeline {
 
     post {
         success {
-            echo "✅ Deployment successful! Access at http://<your-server-ip>:8080"
+            echo "✅ Deployment successful! Access at http://<your-server-ip>:${params.NGINX_PORT}"
         }
         failure {
             echo "❌ Deployment failed!"
