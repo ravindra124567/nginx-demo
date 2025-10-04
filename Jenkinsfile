@@ -3,13 +3,13 @@ pipeline {
 
     environment {
         IMAGE_NAME = "nginx-demo"
-        DOCKERHUB_USER = "your_dockerhub_username"  // optional
+        DOCKERHUB_USER = "sashikumar24"
     }
 
     stages {
         stage('Checkout') {
             steps {
-                echo "Pulling code from GitHub..."
+                echo "Pulling source code from GitHub..."
                 git branch: 'main', url: 'https://github.com/yourusername/nginx-demo.git'
             }
         }
@@ -21,27 +21,26 @@ pipeline {
             }
         }
 
-        stage('Run Container') {
+        stage('Run Container Locally') {
             steps {
                 echo "Running container on port 8080..."
                 sh '''
                 docker stop nginx-demo || true
                 docker rm nginx-demo || true
-                docker run -d --name nginx-demo -p 8080:80 ${IMAGE_NAME}:latest
+                docker run -d --name nginx-demo -p 8080:80 nginx-demo:latest
                 '''
             }
         }
 
-        stage('(Optional) Push to Docker Hub') {
-            when {
-                expression { return env.DOCKERHUB_USER != '' }
-            }
+        stage('Push to DockerHub') {
             steps {
-                withCredentials([string(credentialsId: 'dockerhub-token', variable: 'DOCKERHUB_PASS')]) {
+                echo "Pushing image to DockerHub..."
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                     sh '''
-                    echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
-                    docker tag ${IMAGE_NAME}:latest ${DOCKERHUB_USER}/${IMAGE_NAME}:latest
-                    docker push ${DOCKERHUB_USER}/${IMAGE_NAME}:latest
+                    echo "$PASSWORD" | docker login -u "$USERNAME" --password-stdin
+                    docker tag nginx-demo:latest ${USERNAME}/nginx-demo:latest
+                    docker push ${USERNAME}/nginx-demo:latest
+                    docker logout
                     '''
                 }
             }
@@ -50,10 +49,11 @@ pipeline {
 
     post {
         success {
-            echo "✅ Deployment successful! Access app at http://<your-server-ip>:8080"
+            echo "✅ Deployment successful! Access at http://<your-server-ip>:8080"
         }
         failure {
             echo "❌ Deployment failed!"
         }
     }
 }
+
