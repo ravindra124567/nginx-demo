@@ -10,7 +10,9 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo "Pulling source code from GitHub..."
-                git branch: 'main', url: 'https://github.com/yourusername/nginx-demo.git'
+                git branch: 'main',
+                    url: 'https://github.com/ravindra124567/nginx-demo.git',
+                    credentialsId: 'GITS_CREDENTIAL' // GitHub PAT credential ID in Jenkins
             }
         }
 
@@ -56,4 +58,3 @@ pipeline {
         }
     }
 }
-
